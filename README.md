@@ -104,7 +104,52 @@ Checks for:
 - absolute local paths
 - missing declared binaries or paths
 
+### Import an existing Claude Code skill
+
+Use `import` for directories that already contain `SKILL.md`, like `.claude/skills/metabase`.
+
+```bash
+cd /path/to/repo
+skillsync import .claude/skills/metabase \
+  --bucket projects
+```
+
+This copies the skill to:
+
+```text
+~/Personal/AI/skills/projects/metabase
+```
+
+It also creates `skill.meta.json` if missing, then validates the imported skill.
+
+To replace the original with a managed symlink after import:
+
+```bash
+cd /path/to/repo
+skillsync import .claude/skills/metabase \
+  --bucket projects \
+  --link-back
+```
+
+Result:
+
+```text
+.claude/skills/metabase -> ~/Personal/AI/skills/projects/metabase
+```
+
+If the destination already exists, add `--force` only after checking the diff.
+Use `--dry-run` first when unsure.
+
+For your Mac example:
+
+```bash
+cd /Users/maksymprokopov/it-premium/adminka-core
+skillsync import .claude/skills/metabase --bucket projects --link-back
+```
+
 ### Convert a Claude command into a skill
+
+Use `convert-command` for single Markdown command files under `.claude/commands/*.md`.
 
 ```bash
 skillsync convert-command \

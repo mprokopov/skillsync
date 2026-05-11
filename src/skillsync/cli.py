@@ -16,7 +16,7 @@ import sys
 from pathlib import Path
 from typing import Any
 
-DEFAULT_ROOT = Path(os.environ.get("SKILLSYNC_HOME", "~/Syncthing/AI")).expanduser()
+DEFAULT_ROOT = Path(os.environ.get("SKILLSYNC_HOME", "~/Personal/AI")).expanduser()
 SKILL_MD = "SKILL.md"
 META_JSON = "skill.meta.json"
 
@@ -196,6 +196,45 @@ def install_path(src: Path, dest: Path, mode: str, dry_run: bool = False) -> Non
     print(f"installed {src} -> {dest} ({mode})")
 
 
+def copy_skill(src: Path, dest: Path, force: bool = False, dry_run: bool = False) -> None:
+    if not is_skill_dir(src):
+        die(f"not a skill directory: {src}")
+    if dest.exists() or dest.is_symlink():
+        if not force:
+            die(f"destination already exists: {dest} (use --force to replace)")
+        if dry_run:
+            print(f"would remove existing destination: {dest}")
+        elif dest.is_symlink() or dest.is_file():
+            dest.unlink()
+        else:
+            shutil.rmtree(dest)
+    if dry_run:
+        print(f"would import: {src} -> {dest}")
+        return
+    ensure_parent(dest)
+    shutil.copytree(src, dest, symlinks=True)
+    print(f"imported {src} -> {dest}")
+
+
+def ensure_basic_meta(skill_dir: Path, name: str, privacy: str, source: Path, dry_run: bool = False) -> None:
+    meta_path = skill_dir / META_JSON
+    if meta_path.exists():
+        return
+    meta = {
+        "schema": "https://openclaw.ai/schemas/skill-meta-v1.json",
+        "id": name,
+        "privacy": privacy,
+        "source": {"importedFrom": str(source)},
+        "compatibility": {"claude-code": True, "openclaw": True},
+        "requires": [],
+    }
+    if dry_run:
+        print(f"would create {meta_path}")
+        return
+    write_json(meta_path, meta)
+    print(f"created {meta_path}")
+
+
 def target_dest(target: str, scope: str, name: str, cwd: Path) -> Path:
     if target == "claude-code":
         return (cwd / ".claude/skills" / name) if scope == "repo" else Path("~/.claude/skills").expanduser() / name
@@ -237,6 +276,32 @@ def cmd_install(args: argparse.Namespace) -> int:
     dest = Path(args.dest).expanduser() if args.dest else target_dest(args.target, args.scope, name, Path.cwd())
     install_path(src, dest, args.mode, args.dry_run)
     return 0
+
+
+def cmd_import(args: argparse.Namespace) -> int:
+    src = rel_or_abs(args.path)
+    if not is_skill_dir(src):
+        die(f"not a skill directory: {src}")
+    fm, _ = parse_frontmatter(read_text(src / SKILL_MD))
+    name = args.name or fm.get("name") or src.name
+    slug = re.sub(r"[^a-z0-9_-]+", "-", name.lower()).strip("-") or src.name
+    root = Path(args.root).expanduser() if args.root else DEFAULT_ROOT
+    dest = Path(args.dest).expanduser() if args.dest else root / "skills" / args.bucket / slug
+
+    privacy = args.privacy or {"projects": "project"}.get(args.bucket, args.bucket)
+
+    copy_skill(src, dest, force=args.force, dry_run=args.dry_run)
+    ensure_basic_meta(dest, slug, privacy, src, dry_run=args.dry_run)
+
+    code = 0 if args.dry_run else validate_skill(dest, privacy)
+
+    if args.link_back:
+        if args.dry_run:
+            print(f"would replace source with symlink: {src} -> {dest}")
+        else:
+            install_path(dest, src, "symlink", dry_run=False)
+
+    return code
 
 
 def cmd_convert_command(args: argparse.Namespace) -> int:
@@ -295,7 +360,7 @@ def cmd_tool_install(args: argparse.Namespace) -> int:
 
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="skillsync")
-    p.add_argument("--root", default=None, help="Syncthing AI root; default $SKILLSYNC_HOME or ~/Syncthing/AI")
+    p.add_argument("--root", default=None, help="Syncthing AI root; default $SKILLSYNC_HOME or ~/Personal/AI")
     sub = p.add_subparsers(dest="cmd", required=True)
 
     scan = sub.add_parser("scan")
@@ -316,6 +381,17 @@ def build_parser() -> argparse.ArgumentParser:
     inst.add_argument("--name")
     inst.add_argument("--dry-run", action="store_true")
     inst.set_defaults(func=cmd_install)
+
+    imp = sub.add_parser("import", help="Import an existing skill into the synced skills root")
+    imp.add_argument("path", help="Existing skill directory containing SKILL.md")
+    imp.add_argument("--bucket", default="projects", choices=["public", "personal", "projects", "openclaw-only"], help="Destination bucket under $SKILLSYNC_HOME/skills")
+    imp.add_argument("--privacy", choices=["public", "project", "personal", "openclaw-only"], help="Privacy value for generated skill.meta.json; defaults from bucket")
+    imp.add_argument("--name", help="Destination skill name; defaults from frontmatter name or source directory")
+    imp.add_argument("--dest", help="Explicit destination directory; bypasses bucket/name")
+    imp.add_argument("--force", action="store_true", help="Replace existing destination")
+    imp.add_argument("--link-back", action="store_true", help="Replace original source with symlink to imported skill after successful import")
+    imp.add_argument("--dry-run", action="store_true")
+    imp.set_defaults(func=cmd_import)
 
     conv = sub.add_parser("convert-command")
     conv.add_argument("path")

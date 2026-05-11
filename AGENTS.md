@@ -198,6 +198,33 @@ skillsync install "$SKILLSYNC_HOME/skills/projects/writebook" \
 
 Use `--dest PATH` for unsupported layouts.
 
+## Importing an existing skill
+
+Use `import` for an existing skill directory that already has `SKILL.md`.
+
+Example: import Claude Code's repo-local `metabase` skill:
+
+```bash
+cd /path/to/adminka-core
+skillsync import .claude/skills/metabase --bucket projects
+```
+
+This copies it to:
+
+```text
+$SKILLSYNC_HOME/skills/projects/metabase
+```
+
+Then it creates `skill.meta.json` if missing and validates the imported copy.
+
+To replace the original with a managed symlink after import:
+
+```bash
+skillsync import .claude/skills/metabase --bucket projects --link-back
+```
+
+Use `--dry-run` first when unsure. Use `--force` only when replacing an existing destination intentionally.
+
 ## Converting an existing Claude command
 
 ```bash
