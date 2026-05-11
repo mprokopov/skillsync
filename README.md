@@ -120,6 +120,27 @@ SKILL.md
 skill.meta.json
 ```
 
+### Supported install scopes
+
+Currently supported `--scope` values:
+
+- `repo` — install into the current project/repository.
+- `global` — install into the user's global agent config, where supported.
+
+Scope support by target:
+
+| Target | `repo` | `global` |
+|---|---:|---:|
+| `claude-code` | `.claude/skills/<name>` | `~/.claude/skills/<name>` |
+| `pi` | `.pi/skills/<name>` | currently resolves like repo; prefer `repo` or `--dest` |
+| `openclaw` | ignored; installs to workspace | `~/.openclaw/workspace/skills/<name>` |
+
+Notes:
+
+- `--scope repo` is the default.
+- `--target openclaw` currently always installs into `~/.openclaw/workspace/skills`, because OpenClaw workspace skills are effectively global for this workspace. The `--scope` value does not change this yet.
+- Use `--dest PATH` to bypass target/scope resolution entirely. This is the escape hatch for unsupported layouts.
+
 ### Install a skill into Claude Code repo-local skills
 
 ```bash
@@ -134,6 +155,21 @@ Creates:
 
 ```text
 .claude/skills/writebook -> ~/Personal/AI/skills/projects/writebook
+```
+
+### Install a skill into Claude Code global skills
+
+```bash
+skillsync install ~/Personal/AI/skills/projects/writebook \
+  --target claude-code \
+  --scope global \
+  --mode symlink
+```
+
+Creates:
+
+```text
+~/.claude/skills/writebook -> ~/Personal/AI/skills/projects/writebook
 ```
 
 ### Install a skill into `.pi/skills`
