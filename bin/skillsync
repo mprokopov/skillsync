@@ -1,4 +1,11 @@
 #!/usr/bin/env python3
+from pathlib import Path
+import sys
+
+repo_src = Path(__file__).resolve().parents[1] / "src"
+if repo_src.exists():
+    sys.path.insert(0, str(repo_src))
+
 from skillsync.cli import main
 
 raise SystemExit(main())
