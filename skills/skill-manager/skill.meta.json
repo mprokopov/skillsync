@@ -1,0 +1,14 @@
+{
+  "schema": "https://openclaw.ai/schemas/skill-meta-v1.json",
+  "id": "skill-manager",
+  "privacy": "public",
+  "compatibility": {
+    "claude-code": true,
+    "openclaw": true,
+    "pi": true
+  },
+  "requires": [
+    { "bin": "python3" },
+    { "bin": "skillsync", "install": "uv tool install git+https://github.com/mprokopov/skillsync.git" }
+  ]
+}

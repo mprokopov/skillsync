@@ -221,6 +221,22 @@ skillsync install ~/Personal/AI/skills/projects/writebook \
   --mode symlink
 ```
 
+
+## Bundled skill
+
+This repo includes a reusable agent skill:
+
+```text
+skills/skill-manager/
+  SKILL.md
+  skill.meta.json
+  scripts/skillsync
+```
+
+Use it when an agent needs to manage skills with `skillsync`: scan, validate, convert Claude commands, install skills into Claude Code/OpenClaw/Pi locations, or install lightweight companion tools.
+
+The bundled `scripts/skillsync` wrapper prefers an installed `skillsync` command and falls back to this repository checkout when possible.
+
 ## Privacy buckets
 
 Suggested skill categories:
