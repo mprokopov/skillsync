@@ -1,0 +1,16 @@
+[project]
+name = "skillsync"
+version = "0.1.0"
+description = "Sync AI agent skills and lightweight tools across machines"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "MIT" }
+authors = [{ name = "Maksym Prokopov" }]
+dependencies = []
+
+[project.scripts]
+skillsync = "skillsync.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
