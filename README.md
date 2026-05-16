@@ -4,6 +4,10 @@ Tiny local helper for syncing AI agent skills and lightweight tools across machi
 
 `skillsync` assumes you already have a shared folder, usually synced with Syncthing. It does **not** try to be a cloud service or a package registry. It just validates, converts, and installs skills/tools into the places different agents expect.
 
+## Further reading
+
+- [skillsync: Reusing AI Agent Skills](https://prokopov.me/posts/skillsync-reusing-ai-agent-skills/)
+
 ## What it manages
 
 - Claude Code repo/global skills
