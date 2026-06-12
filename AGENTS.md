@@ -188,6 +188,8 @@ skillsync install "$SKILLSYNC_HOME/skills/projects/writebook" \
   --mode symlink
 ```
 
+This installs to `$CODEX_HOME/skills/<name>` when `CODEX_HOME` is set, otherwise `~/.codex/skills/<name>`.
+
 OpenClaw workspace:
 
 ```bash
