@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Any
 
 DEFAULT_ROOT = Path(os.environ.get("SKILLSYNC_HOME", "~/Personal/AI")).expanduser()
+DEFAULT_CODEX_HOME = Path(os.environ.get("CODEX_HOME", "~/.codex")).expanduser()
 SKILL_MD = "SKILL.md"
 META_JSON = "skill.meta.json"
 
@@ -225,7 +226,7 @@ def ensure_basic_meta(skill_dir: Path, name: str, privacy: str, source: Path, dr
         "id": name,
         "privacy": privacy,
         "source": {"importedFrom": str(source)},
-        "compatibility": {"claude-code": True, "openclaw": True},
+        "compatibility": {"claude-code": True, "codex": True, "openclaw": True},
         "requires": [],
     }
     if dry_run:
@@ -238,6 +239,8 @@ def ensure_basic_meta(skill_dir: Path, name: str, privacy: str, source: Path, dr
 def target_dest(target: str, scope: str, name: str, cwd: Path) -> Path:
     if target == "claude-code":
         return (cwd / ".claude/skills" / name) if scope == "repo" else Path("~/.claude/skills").expanduser() / name
+    if target == "codex":
+        return DEFAULT_CODEX_HOME / "skills" / name
     if target == "openclaw":
         return Path("~/.openclaw/workspace/skills").expanduser() / name
     if target == "pi":
@@ -321,7 +324,7 @@ def cmd_convert_command(args: argparse.Namespace) -> int:
         "schema": "https://openclaw.ai/schemas/skill-meta-v1.json",
         "id": slug,
         "privacy": args.privacy,
-        "compatibility": {"claude-code": True, "openclaw": True},
+        "compatibility": {"claude-code": True, "codex": True, "openclaw": True},
         "requires": [],
     }
     write_json(dest / META_JSON, meta)
@@ -374,7 +377,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     inst = sub.add_parser("install")
     inst.add_argument("path")
-    inst.add_argument("--target", choices=["claude-code", "openclaw", "pi"], default="claude-code")
+    inst.add_argument("--target", choices=["claude-code", "codex", "openclaw", "pi"], default="claude-code")
     inst.add_argument("--scope", choices=["repo", "global"], default="repo")
     inst.add_argument("--mode", choices=["symlink", "copy"], default="symlink")
     inst.add_argument("--dest")

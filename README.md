@@ -11,6 +11,7 @@ Tiny local helper for syncing AI agent skills and lightweight tools across machi
 ## What it manages
 
 - Claude Code repo/global skills
+- Codex user skills
 - OpenClaw workspace skills
 - project-local `.pi/skills`
 - lightweight scripts in `tools/*/bin`
@@ -181,12 +182,14 @@ Scope support by target:
 | Target | `repo` | `global` |
 |---|---:|---:|
 | `claude-code` | `.claude/skills/<name>` | `~/.claude/skills/<name>` |
+| `codex` | ignored; installs to Codex user skills | `$CODEX_HOME/skills/<name>` or `~/.codex/skills/<name>` |
 | `pi` | `.pi/skills/<name>` | currently resolves like repo; prefer `repo` or `--dest` |
 | `openclaw` | ignored; installs to workspace | `~/.openclaw/workspace/skills/<name>` |
 
 Notes:
 
 - `--scope repo` is the default.
+- `--target codex` always installs into Codex user skills. It uses `$CODEX_HOME/skills` when `CODEX_HOME` is set, otherwise `~/.codex/skills`.
 - `--target openclaw` currently always installs into `~/.openclaw/workspace/skills`, because OpenClaw workspace skills are effectively global for this workspace. The `--scope` value does not change this yet.
 - Use `--dest PATH` to bypass target/scope resolution entirely. This is the escape hatch for unsupported layouts.
 
@@ -219,6 +222,20 @@ Creates:
 
 ```text
 ~/.claude/skills/writebook -> ~/Personal/AI/skills/projects/writebook
+```
+
+### Install a skill into Codex user skills
+
+```bash
+skillsync install ~/Personal/AI/skills/projects/writebook \
+  --target codex \
+  --mode symlink
+```
+
+Creates:
+
+```text
+~/.codex/skills/writebook -> ~/Personal/AI/skills/projects/writebook
 ```
 
 ### Install a skill into `.pi/skills`
@@ -267,6 +284,10 @@ cd ~/Developer/adminka-core
 skillsync install ~/Personal/AI/skills/projects/writebook \
   --target claude-code \
   --scope repo \
+  --mode symlink
+
+skillsync install ~/Personal/AI/skills/projects/writebook \
+  --target codex \
   --mode symlink
 ```
 

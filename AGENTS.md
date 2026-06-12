@@ -73,6 +73,7 @@ Add metadata beside `SKILL.md`:
   "privacy": "project",
   "compatibility": {
     "claude-code": true,
+    "codex": true,
     "openclaw": true,
     "pi": true
   },
@@ -139,6 +140,7 @@ cat > "$SKILLSYNC_HOME/skills/projects/writebook/skill.meta.json" <<'JSON'
   "privacy": "project",
   "compatibility": {
     "claude-code": true,
+    "codex": true,
     "openclaw": true,
     "pi": true
   },
@@ -175,6 +177,14 @@ Claude Code global:
 skillsync install "$SKILLSYNC_HOME/skills/projects/writebook" \
   --target claude-code \
   --scope global \
+  --mode symlink
+```
+
+Codex user skills:
+
+```bash
+skillsync install "$SKILLSYNC_HOME/skills/projects/writebook" \
+  --target codex \
   --mode symlink
 ```
 
